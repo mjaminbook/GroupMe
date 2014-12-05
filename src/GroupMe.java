@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashMap;
 public class GroupMe
 {
+    //Comment
     public static void main(String [] args)
     {
         Scanner scanner = new Scanner(System.in);
