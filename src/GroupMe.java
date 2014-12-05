@@ -1,4 +1,6 @@
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.util.*;
 
 public class GroupMe
@@ -9,7 +11,16 @@ public class GroupMe
 
     public static void main(String [] args)
     {
-        Scanner scanner = new Scanner(System.in);
+        Scanner scanner = null;
+        try
+        {
+            scanner = new Scanner(new FileReader("Files/messages.txt"));
+        } catch (FileNotFoundException e)
+        {
+            e.printStackTrace();
+            System.out.println("Messages.txt not found");
+            System.exit(1);
+        }
         LinkedList<String> validNames = new LinkedList<String>();
         validNames.add("Ned READ");
         validNames.add("Ryan Dugan");
