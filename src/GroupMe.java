@@ -1,12 +1,12 @@
-import java.util.Scanner;
-import java.util.List;
-import java.util.LinkedList;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
+import java.io.File;
+import java.util.*;
+
 public class GroupMe
 {
-    //Comment
+    private static HashMap<String, Messenger> stats = new HashMap<String, Messenger>();
+    private static Calendar creationDate = new GregorianCalendar(2013, 10, 10);
+    private static Calendar currentDate = new GregorianCalendar();
+
     public static void main(String [] args)
     {
         Scanner scanner = new Scanner(System.in);
@@ -22,10 +22,8 @@ public class GroupMe
         validNames.add("Mara Halvorson");
         validNames.add("Bridget Gustafson");
         validNames.add("Emily Roebuck");
-        int i = 0;
         boolean nextIsName = false;
-        HashMap<String, Messenger> stats = new HashMap<String, Messenger>();
-        HashMap<String, List<String>> changedNames = new HashMap<String, List<String>>();
+        //HashMap<String, List<String>> changedNames = new HashMap<String, List<String>>();
         int mostLikes = 0;
         String mostLiked = "";
         String message = "";
@@ -71,8 +69,7 @@ public class GroupMe
                 text = text.replace("changed name to ","");
                 String fromName = text.substring(0,spaceLoc);
                 String toName = text.substring(spaceLoc);
-                validNames.remove(fromName);
-                validNames.add(toName);
+                changeName(fromName, toName);
 			/*if(changedNames.containsKey(fromName))
 				changedNames.get(fromName).add(toName);
 			else
@@ -119,11 +116,7 @@ public class GroupMe
                         stats.put(mostRecentName, new Messenger(0, mostRecentName));
                     }
                 }
-
             }
-            //i++;
-            //if(i > 100)
-            //	return;
         }
         int totalLikes = 0;
         int totalMessages = 0;
@@ -145,15 +138,15 @@ public class GroupMe
         System.out.println("Total Number Of Messages: " + totalMessages);
         System.out.println("Total Number Of Likes: " + totalLikes);
         System.out.println("");
-        for(String s: changedNames.keySet())
-        {
-            System.out.println(s + " changed their name to:");
-            for(String s2: changedNames.get(s))
-            {
-                System.out.println(s2);
-            }
-            System.out.println("");
-        }
+        //for(String s: changedNames.keySet())
+        // {
+        //    System.out.println(s + " changed their name to:");
+        //    for(String s2: changedNames.get(s))
+        //    {
+        //        System.out.println(s2);
+        //    }
+        //    System.out.println("");
+        //}
         System.out.println("Most likes on a message: " + mostLikes);
         System.out.println(mostLiked);
         System.out.println("Highest Percent: " + highestPercent);
@@ -167,76 +160,54 @@ public class GroupMe
             System.out.println(n + ": " + m.getName());
         }
     }
+
+
+    /**
+     * Edits the main HashMap whenever someone changes their username inside the group.
+     * @param oldName The person's previous name.
+     * @param newName The name the person is changing their name to.
+     */
+    public static void changeName(String oldName, String newName){
+        int numMessages = stats.get(oldName).getNumMessages();
+        int numLikes = stats.get(oldName).getNumLikes();
+        stats.remove(oldName);
+        stats.put(newName, new Messenger(numLikes, numMessages, newName));
+    }
+
+    /**
+     * Starts an interactive conversation with the user which allows them to lookup statistics on an individual in the group.
+     */
+    public static void lookup(){
+        Scanner scanner = new Scanner(System.in);
+        while(true){
+            System.out.println("Lookup stats for which group member: ");
+            String name = scanner.nextLine();
+            if(!stats.containsKey(name)){
+                System.out.println("Invalid name.");
+            }
+            else if(name.equals("exit")){
+                break;
+            }
+            else{
+                double avgLikes = stats.get(name).getNumLikes() / stats.get(name).getNumMessages();
+                System.out.println(name + " has sent a total of" + stats.get(name).getNumMessages() + " messages since the creation of the group.");
+                System.out.println("They have received a total of" + stats.get(name).getNumLikes() + "likes on their messages over this period of time.");
+                System.out.println("This give them an average number of " + avgLikes + "likes per message.");
+            }
+        }
+    }
+
+    /**
+     * Checks to see if a give String is a date.
+     * @param s The String to be checked.
+     * @return True if the String is a date, false if it is not.
+     */
     public static boolean isDate(String s)
     {
         if(s.length() <= 5)
             return false;
-        if(s.contains(":") && s.charAt(s.length()-1) == 'm' && (s.charAt(s.length()-2) == 'p' || s.charAt(s.length()-2) == 'a') && Character.isDigit(s.charAt(s.length() - 3)))
+        else if(s.contains(":") && s.charAt(s.length()-1) == 'm' && (s.charAt(s.length()-2) == 'p' || s.charAt(s.length()-2) == 'a') && Character.isDigit(s.charAt(s.length() - 3)))
             return true;
         return false;
-    }
-    private static class Messenger implements Comparable
-    {
-        private int numMessages;
-        private int numLikes;
-        private String name;
-
-        public Messenger(int likes,String name)
-        {
-            numMessages = 1;
-            numLikes = likes;
-            this.name = name;
-        }
-
-        public int getNumMessages()
-        {
-            return numMessages;
-        }
-        public String getName()
-        {
-            return name;
-        }
-
-        public int getNumLikes()
-        {
-            return numLikes;
-        }
-
-        public void setNumMessages(int x)
-        {
-            numMessages = x;
-        }
-        public void addMessage()
-        {
-            numMessages++;
-        }
-
-        public void addLikes(int x)
-        {
-            numLikes += x;
-        }
-
-        public void setNumLikes(int x)
-        {
-            numLikes = x;
-        }
-        public double getPercent()
-        {
-            return 1.0*numLikes / (1.0*numMessages);
-        }
-        @Override
-        public int compareTo(Object other)
-        {
-            if(other instanceof Messenger)
-            {
-                Messenger m = (Messenger) other;
-                if(getPercent() > m.getPercent())
-                    return -1;
-                else if( getPercent() < m.getPercent())
-                    return 1;
-                return 0;
-            }
-            return 0;
-        }
     }
 }
